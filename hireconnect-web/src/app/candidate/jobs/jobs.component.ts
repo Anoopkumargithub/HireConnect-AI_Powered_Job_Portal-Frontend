@@ -271,7 +271,7 @@ export class JobsComponent implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
 
-    let url = `http://localhost:5000/api/jobs?page=${this.page}&pageSize=${this.pageSize}`;
+    let url = `https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs?page=${this.page}&pageSize=${this.pageSize}`;
     if (this.keyword) url += `&keyword=${encodeURIComponent(this.keyword)}`;
     if (this.location) url += `&location=${encodeURIComponent(this.location)}`;
     if (this.category) url += `&category=${this.category}`;
@@ -327,7 +327,7 @@ export class JobsComponent implements OnInit {
       resumeUrl: this.resumeUrl || null
     };
 
-    this.http.post<any>('http://localhost:5000/api/applications', payload, { headers: this.getHeaders() }).subscribe({
+    this.http.post<any>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/applications', payload, { headers: this.getHeaders() }).subscribe({
       next: () => {
         this.appliedJobIds.add(this.selectedJob!.jobId);
         this.applySuccess = '🎉 Application submitted successfully!';

@@ -194,7 +194,7 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.successMessage = '';
     
-    this.http.post('http://localhost:5000/api/auth/register', this.form).subscribe({
+    this.http.post('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/auth/register', this.form).subscribe({
       next: () => {
         this.successMessage = 'Registration successful. Redirecting to login...';
         setTimeout(() => {

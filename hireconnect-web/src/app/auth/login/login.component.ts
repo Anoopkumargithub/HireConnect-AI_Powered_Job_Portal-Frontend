@@ -152,7 +152,7 @@ export class LoginComponent {
     
     this.errorMessage = '';
     
-    this.http.post<any>('http://localhost:5000/api/auth/login', this.credentials).subscribe({
+    this.http.post<any>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/auth/login', this.credentials).subscribe({
       next: (response) => {
         const token = response.token || response.accessToken;
         if (token) {

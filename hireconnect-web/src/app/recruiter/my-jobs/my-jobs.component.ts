@@ -289,7 +289,7 @@ export class MyJobsComponent implements OnInit {
   loadJobs() {
     this.loading = true;
     this.cdr.detectChanges();
-    this.http.get<any>('http://localhost:5000/api/jobs/mine', { headers: this.getHeaders() }).subscribe({
+    this.http.get<any>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs/mine', { headers: this.getHeaders() }).subscribe({
       next: (res) => {
         this.jobs = res.items ?? res ?? [];
         this.loading = false;
@@ -329,7 +329,7 @@ export class MyJobsComponent implements OnInit {
       experienceMinYears: +this.form.experienceMinYears
     };
 
-    this.http.post<Job>('http://localhost:5000/api/jobs', payload, { headers: this.getHeaders() }).subscribe({
+    this.http.post<Job>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs', payload, { headers: this.getHeaders() }).subscribe({
       next: () => {
         this.posting = false;
         this.showModal = false;
@@ -346,7 +346,7 @@ export class MyJobsComponent implements OnInit {
 
   deleteJob(id: string) {
     if (!confirm('Are you sure you want to delete this job?')) return;
-    this.http.delete(`http://localhost:5000/api/jobs/${id}`, { headers: this.getHeaders() }).subscribe({
+    this.http.delete(`https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs/${id}`, { headers: this.getHeaders() }).subscribe({
       next: () => this.loadJobs(),
       error: () => {
         alert('Failed to delete job.');
