@@ -1,0 +1,119 @@
+<div class="hc-modal" ng-if="$ctrl.application || $ctrl.standalone">
+    <div class="hc-card">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="hc-section-title">Schedule Interview</div>
+            <button
+                class="btn btn-light btn-sm"
+                ng-click="$ctrl.onClose && $ctrl.onClose()"
+            >
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <form class="hc-grid two" ng-submit="$ctrl.submit()">
+            <div ng-if="$ctrl.standalone">
+                <label class="form-label">Application ID</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.form.applicationId"
+                />
+            </div>
+            <div ng-if="$ctrl.standalone">
+                <label class="form-label">Job ID</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.form.jobId"
+                />
+            </div>
+            <div ng-if="$ctrl.standalone">
+                <label class="form-label">Candidate ID</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.form.candidateId"
+                />
+            </div>
+            <div>
+                <label class="form-label">Candidate Email</label>
+                <input
+                    class="form-control hc-input"
+                    type="email"
+                    ng-model="$ctrl.form.candidateEmail"
+                    required
+                />
+            </div>
+            <div>
+                <label class="form-label">Date</label>
+                <input
+                    class="form-control hc-input"
+                    type="date"
+                    ng-model="$ctrl.form.date"
+                    required
+                />
+            </div>
+            <div>
+                <label class="form-label">Time</label>
+                <input
+                    class="form-control hc-input"
+                    type="time"
+                    ng-model="$ctrl.form.time"
+                    required
+                />
+            </div>
+            <div>
+                <label class="form-label">Duration (minutes)</label>
+                <input
+                    class="form-control hc-input"
+                    type="number"
+                    ng-model="$ctrl.form.durationMinutes"
+                />
+            </div>
+            <div>
+                <label class="form-label">Mode</label>
+                <select
+                    class="form-select hc-input"
+                    ng-model="$ctrl.form.mode"
+                    ng-options="mode.value as mode.label for mode in $ctrl.modes"
+                ></select>
+            </div>
+            <div>
+                <label class="form-label">Meeting Link</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.form.meetLink"
+                />
+            </div>
+            <div>
+                <label class="form-label">Location</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.form.location"
+                />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Recruiter Notes</label>
+                <textarea
+                    class="form-control hc-input"
+                    rows="3"
+                    ng-model="$ctrl.form.recruiterNotes"
+                ></textarea>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button class="btn hc-btn-primary" type="submit">
+                    Schedule
+                </button>
+                <button
+                    class="btn hc-btn-outline"
+                    type="button"
+                    ng-click="$ctrl.onClose && $ctrl.onClose()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </form>
+        <div class="text-success mt-2" ng-if="$ctrl.message">
+            {{$ctrl.message}}
+        </div>
+        <div class="text-danger" ng-if="$ctrl.errorMessage">
+            {{$ctrl.errorMessage}}
+        </div>
+    </div>
+</div>

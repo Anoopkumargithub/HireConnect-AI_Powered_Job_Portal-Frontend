@@ -1,0 +1,28 @@
+<div class="hc-card">
+    <div class="hc-section-title">Ranked Candidates</div>
+    <div class="text-danger" ng-if="$ctrl.errorMessage">
+        {{$ctrl.errorMessage}}
+    </div>
+</div>
+
+<div class="hc-grid three mt-4">
+    <div class="hc-card" ng-repeat="candidate in $ctrl.candidates">
+        <div class="d-flex justify-content-between">
+            <div>
+                <div class="fw-semibold">
+                    Candidate {{candidate.candidateId}}
+                </div>
+                <div class="text-muted">
+                    Application {{candidate.applicationId}}
+                </div>
+            </div>
+            <span class="hc-pill">{{candidate.aiMatchScore || 0}}%</span>
+        </div>
+        <p class="mt-3 text-muted">{{candidate.oneLineSummary}}</p>
+        <div class="hc-progress">
+            <span
+                ng-style="{'width': (candidate.aiMatchScore || 0) + '%'}"
+            ></span>
+        </div>
+    </div>
+</div>

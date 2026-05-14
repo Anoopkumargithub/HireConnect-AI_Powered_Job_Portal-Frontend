@@ -1,0 +1,22 @@
+<div class="hc-card mx-auto" style="max-width: 420px;">
+  <div class="hc-section-title">Welcome back</div>
+  <p class="text-muted">Sign in to continue to HireConnect.</p>
+
+  <form ng-submit="$ctrl.login()">
+    <div class="mb-3">
+      <label class="form-label">Email</label>
+      <input class="form-control hc-input" type="email" ng-model="$ctrl.credentials.email" required />
+    </div>
+    <div class="mb-3">
+      <label class="form-label">Password</label>
+      <input class="form-control hc-input" type="password" ng-model="$ctrl.credentials.password" required />
+    </div>
+    <div class="text-danger" ng-if="$ctrl.errorMessage">{{$ctrl.errorMessage}}</div>
+    <button class="btn hc-btn-primary w-100 mt-3" type="submit">Login</button>
+  </form>
+
+  <div class="mt-3 text-center">
+    <span class="text-muted">New here?</span>
+    <a href="#/register">Create an account</a>
+  </div>
+</div>

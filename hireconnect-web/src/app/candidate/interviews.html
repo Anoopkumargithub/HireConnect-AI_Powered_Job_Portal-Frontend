@@ -1,0 +1,70 @@
+<div class="hc-card">
+    <div class="hc-section-title">Interview Schedule</div>
+    <div class="text-danger" ng-if="$ctrl.errorMessage">
+        {{$ctrl.errorMessage}}
+    </div>
+    <div class="hc-grid two">
+        <div class="hc-card" ng-repeat="interview in $ctrl.interviews">
+            <div class="d-flex justify-content-between">
+                <div>
+                    <div class="fw-semibold">
+                        Interview {{interview.interviewId}}
+                    </div>
+                    <div class="text-muted">Job {{interview.jobId}}</div>
+                </div>
+                <span
+                    class="hc-status"
+                    ng-class="$ctrl.statusClass(interview.status)"
+                    >{{$ctrl.statusLabel(interview.status)}}</span
+                >
+            </div>
+            <div class="mt-3">
+                <div>
+                    <strong>Scheduled:</strong> {{interview.scheduledAt |
+                    date:'medium'}}
+                </div>
+                <div>
+                    <strong>Mode:</strong> {{$ctrl.modeLabel(interview.mode)}}
+                </div>
+                <div ng-if="interview.meetLink">
+                    <strong>Meet Link:</strong> {{interview.meetLink}}
+                </div>
+                <div ng-if="interview.location">
+                    <strong>Location:</strong> {{interview.location}}
+                </div>
+            </div>
+            <div class="mt-3">
+                <button
+                    class="btn hc-btn-primary btn-sm me-2"
+                    ng-click="$ctrl.confirm(interview)"
+                >
+                    Confirm
+                </button>
+                <div class="d-flex gap-2 mt-2">
+                    <input
+                        class="form-control hc-input"
+                        type="date"
+                        ng-model="interview.newDate"
+                    />
+                    <input
+                        class="form-control hc-input"
+                        type="time"
+                        ng-model="interview.newTime"
+                    />
+                    <input
+                        class="form-control hc-input"
+                        type="number"
+                        placeholder="Duration (min)"
+                        ng-model="interview.newDurationMinutes"
+                    />
+                    <button
+                        class="btn hc-btn-outline btn-sm"
+                        ng-click="$ctrl.reschedule(interview)"
+                    >
+                        Reschedule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

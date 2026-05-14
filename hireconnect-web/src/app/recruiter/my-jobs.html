@@ -1,0 +1,172 @@
+<div class="hc-card">
+    <div class="hc-section-title">My Jobs</div>
+    <div class="text-danger" ng-if="$ctrl.errorMessage">
+        {{$ctrl.errorMessage}}
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Role</th>
+                    <th>Location</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="job in $ctrl.jobs">
+                    <td>{{job.title}}</td>
+                    <td>{{job.location}}</td>
+                    <td>
+                        <span
+                            class="hc-status"
+                            ng-class="$ctrl.statusClass(job.status)"
+                        >
+                            {{$ctrl.statusLabel(job.status)}}
+                        </span>
+                    </td>
+                    <td>
+                        <button
+                            class="btn btn-sm btn-outline-primary me-2"
+                            ng-click="$ctrl.edit(job)"
+                        >
+                            Edit
+                        </button>
+                        <button
+                            class="btn btn-sm btn-outline-warning me-2"
+                            ng-click="$ctrl.setStatus(job, 'PAUSED')"
+                        >
+                            Pause
+                        </button>
+                        <button
+                            class="btn btn-sm btn-outline-danger"
+                            ng-click="$ctrl.setStatus(job, 'CLOSED')"
+                        >
+                            Close
+                        </button>
+                    </td>
+                </tr>
+                <tr ng-if="$ctrl.jobs.length === 0">
+                    <td colspan="4" class="text-center text-muted">
+                        No jobs yet.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="hc-modal" ng-if="$ctrl.editingJob">
+    <div class="hc-card">
+        <div class="hc-section-title">Edit Job</div>
+        <form class="hc-grid two" ng-submit="$ctrl.saveEdit()">
+            <div>
+                <label class="form-label">Title</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.editingJob.title"
+                />
+            </div>
+            <div>
+                <label class="form-label">Location</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.editingJob.location"
+                />
+            </div>
+            <div>
+                <label class="form-label">Category</label>
+                <select
+                    class="form-select hc-input"
+                    ng-model="$ctrl.editingJob.category"
+                    ng-options="category.value as category.label for category in $ctrl.enums.jobCategories"
+                >
+                    <option value="">Select category</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Type</label>
+                <select
+                    class="form-select hc-input"
+                    ng-model="$ctrl.editingJob.type"
+                    ng-options="type.value as type.label for type in $ctrl.enums.jobTypes"
+                >
+                    <option value="">Select type</option>
+                </select>
+            </div>
+            <div>
+                <label class="form-label">Remote</label>
+                <div class="form-check">
+                    <input
+                        class="form-check-input"
+                        type="checkbox"
+                        id="editJobRemote"
+                        ng-model="$ctrl.editingJob.isRemote"
+                    />
+                    <label class="form-check-label" for="editJobRemote"
+                        >Remote role</label
+                    >
+                </div>
+            </div>
+            <div>
+                <label class="form-label">Experience (min years)</label>
+                <input
+                    class="form-control hc-input"
+                    type="number"
+                    ng-model="$ctrl.editingJob.experienceMinYears"
+                />
+            </div>
+            <div>
+                <label class="form-label">Salary Min</label>
+                <input
+                    class="form-control hc-input"
+                    type="number"
+                    ng-model="$ctrl.editingJob.salaryMin"
+                />
+            </div>
+            <div>
+                <label class="form-label">Salary Max</label>
+                <input
+                    class="form-control hc-input"
+                    type="number"
+                    ng-model="$ctrl.editingJob.salaryMax"
+                />
+            </div>
+            <div>
+                <label class="form-label">Currency</label>
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.editingJob.currency"
+                    maxlength="3"
+                />
+            </div>
+            <div>
+                <label class="form-label"
+                    >Required Skills (comma separated)</label
+                >
+                <input
+                    class="form-control hc-input"
+                    ng-model="$ctrl.editingJob.requiredSkillsText"
+                />
+            </div>
+            <div class="col-12">
+                <label class="form-label">Description</label>
+                <textarea
+                    class="form-control hc-input"
+                    rows="4"
+                    ng-model="$ctrl.editingJob.description"
+                ></textarea>
+            </div>
+            <div class="col-12 d-flex gap-2">
+                <button class="btn hc-btn-primary" type="submit">Save</button>
+                <button
+                    class="btn hc-btn-outline"
+                    type="button"
+                    ng-click="$ctrl.cancelEdit()"
+                >
+                    Cancel
+                </button>
+            </div>
+        </form>
+    </div>
+</div>

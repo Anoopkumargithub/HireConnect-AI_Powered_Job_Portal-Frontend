@@ -1,0 +1,36 @@
+<div class="hc-card">
+    <div class="hc-section-title">My Applications</div>
+    <div class="text-danger" ng-if="$ctrl.errorMessage">
+        {{$ctrl.errorMessage}}
+    </div>
+    <div class="table-responsive">
+        <table class="table align-middle">
+            <thead>
+                <tr>
+                    <th>Job ID</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="application in $ctrl.applications">
+                    <td>{{application.jobId}}</td>
+                    <td>{{application.appliedAt | date:'mediumDate'}}</td>
+                    <td>
+                        <span
+                            class="hc-status"
+                            ng-class="$ctrl.statusClass(application.status)"
+                        >
+                            {{$ctrl.statusLabel(application.status)}}
+                        </span>
+                    </td>
+                </tr>
+                <tr ng-if="$ctrl.applications.length === 0">
+                    <td colspan="3" class="text-center text-muted">
+                        No applications yet.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>

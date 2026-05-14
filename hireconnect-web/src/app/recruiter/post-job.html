@@ -1,0 +1,140 @@
+<div class="hc-card">
+    <div class="d-flex justify-content-between align-items-center">
+        <div class="hc-section-title">Post a New Job</div>
+        <button
+            class="btn hc-btn-outline"
+            type="button"
+            ng-click="$ctrl.generateDescription()"
+        >
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Generate Description
+        </button>
+    </div>
+    <form class="hc-grid two" ng-submit="$ctrl.submit()">
+        <div>
+            <label class="form-label">Job Title</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.job.title"
+                required
+            />
+        </div>
+        <div>
+            <label class="form-label">Location</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.job.location"
+                required
+            />
+        </div>
+        <div>
+            <label class="form-label">Category</label>
+            <select
+                class="form-select hc-input"
+                ng-model="$ctrl.job.category"
+                ng-options="category.value as category.label for category in $ctrl.enums.jobCategories"
+                required
+            >
+                <option value="">Select category</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Type</label>
+            <select
+                class="form-select hc-input"
+                ng-model="$ctrl.job.type"
+                ng-options="type.value as type.label for type in $ctrl.enums.jobTypes"
+                required
+            >
+                <option value="">Select type</option>
+            </select>
+        </div>
+        <div>
+            <label class="form-label">Remote</label>
+            <div class="form-check">
+                <input
+                    class="form-check-input"
+                    type="checkbox"
+                    id="jobRemote"
+                    ng-model="$ctrl.job.isRemote"
+                />
+                <label class="form-check-label" for="jobRemote"
+                    >Remote role</label
+                >
+            </div>
+        </div>
+        <div>
+            <label class="form-label">Experience (min years)</label>
+            <input
+                class="form-control hc-input"
+                type="number"
+                ng-model="$ctrl.job.experienceMinYears"
+            />
+        </div>
+        <div>
+            <label class="form-label">Salary Min</label>
+            <input
+                class="form-control hc-input"
+                type="number"
+                ng-model="$ctrl.job.salaryMin"
+            />
+        </div>
+        <div>
+            <label class="form-label">Salary Max</label>
+            <input
+                class="form-control hc-input"
+                type="number"
+                ng-model="$ctrl.job.salaryMax"
+            />
+        </div>
+        <div>
+            <label class="form-label">Currency</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.job.currency"
+                placeholder="USD"
+                maxlength="3"
+            />
+        </div>
+        <div>
+            <label class="form-label">Required Skills (comma separated)</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.job.requiredSkillsText"
+            />
+        </div>
+        <div class="col-12">
+            <label class="form-label">Description</label>
+            <textarea
+                class="form-control hc-input"
+                rows="5"
+                ng-model="$ctrl.job.description"
+                required
+            ></textarea>
+        </div>
+        <div class="col-12">
+            <label class="form-label">Company Description (for AI)</label>
+            <textarea
+                class="form-control hc-input"
+                rows="3"
+                ng-model="$ctrl.job.companyDescription"
+            ></textarea>
+        </div>
+        <div>
+            <label class="form-label">Tone (for AI)</label>
+            <select class="form-select hc-input" ng-model="$ctrl.job.tone">
+                <option value="formal">Formal</option>
+                <option value="friendly">Friendly</option>
+                <option value="startup">Startup</option>
+            </select>
+        </div>
+        <div class="d-flex align-items-end">
+            <button class="btn hc-btn-primary w-100" type="submit">
+                Publish Job
+            </button>
+        </div>
+    </form>
+    <div class="text-success mt-3" ng-if="$ctrl.message">{{$ctrl.message}}</div>
+    <div class="text-danger" ng-if="$ctrl.errorMessage">
+        {{$ctrl.errorMessage}}
+    </div>
+</div>

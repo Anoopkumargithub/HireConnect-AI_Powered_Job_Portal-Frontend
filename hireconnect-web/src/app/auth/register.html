@@ -1,0 +1,55 @@
+<div class="hc-card mx-auto" style="max-width: 520px">
+    <div class="hc-section-title">Create your account</div>
+    <p class="text-muted">
+        Join HireConnect to start hiring or applying today.
+    </p>
+
+    <form ng-submit="$ctrl.register()">
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input
+                class="form-control hc-input"
+                type="email"
+                ng-model="$ctrl.form.email"
+                required
+            />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input
+                class="form-control hc-input"
+                type="password"
+                ng-model="$ctrl.form.password"
+                required
+            />
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Role</label>
+            <div class="d-flex gap-2">
+                <button
+                    type="button"
+                    class="btn"
+                    ng-class="$ctrl.form.role === role ? 'btn-primary' : 'btn-outline-primary'"
+                    ng-repeat="role in $ctrl.roles"
+                    ng-click="$ctrl.form.role = role"
+                >
+                    {{role}}
+                </button>
+            </div>
+        </div>
+        <div class="text-danger" ng-if="$ctrl.errorMessage">
+            {{$ctrl.errorMessage}}
+        </div>
+        <div class="text-success" ng-if="$ctrl.successMessage">
+            {{$ctrl.successMessage}}
+        </div>
+        <button class="btn hc-btn-primary w-100 mt-3" type="submit">
+            Register
+        </button>
+    </form>
+
+    <div class="mt-3 text-center">
+        <span class="text-muted">Already have an account?</span>
+        <a href="#/login">Login</a>
+    </div>
+</div>

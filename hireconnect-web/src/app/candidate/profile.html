@@ -1,0 +1,98 @@
+<div class="hc-card">
+    <div class="hc-section-title">My Profile</div>
+    <form class="hc-grid two" ng-submit="$ctrl.save()">
+        <div>
+            <label class="form-label">Full Name</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.profile.fullName"
+            />
+        </div>
+        <div>
+            <label class="form-label">Email</label>
+            <input
+                class="form-control hc-input"
+                type="email"
+                ng-model="$ctrl.profile.email"
+            />
+        </div>
+        <div>
+            <label class="form-label">Mobile</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.profile.mobile"
+            />
+        </div>
+        <div>
+            <label class="form-label">Date of Birth</label>
+            <input
+                class="form-control hc-input"
+                type="date"
+                ng-model="$ctrl.profile.dob"
+            />
+        </div>
+        <div>
+            <label class="form-label">Experience (years)</label>
+            <input
+                class="form-control hc-input"
+                type="number"
+                ng-model="$ctrl.profile.experienceYears"
+            />
+        </div>
+        <div>
+            <label class="form-label">Skills (comma separated)</label>
+            <input class="form-control hc-input" ng-model="$ctrl.skillsText" />
+        </div>
+        <div class="col-12">
+            <label class="form-label">Bio</label>
+            <textarea
+                class="form-control hc-input"
+                rows="4"
+                ng-model="$ctrl.profile.bio"
+            ></textarea>
+        </div>
+        <div>
+            <label class="form-label">LinkedIn URL</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.profile.linkedinUrl"
+            />
+        </div>
+        <div>
+            <label class="form-label">Avatar URL</label>
+            <input
+                class="form-control hc-input"
+                ng-model="$ctrl.profile.avatarUrl"
+            />
+        </div>
+        <div class="d-flex align-items-end">
+            <button class="btn hc-btn-primary w-100" type="submit">
+                Save Profile
+            </button>
+        </div>
+    </form>
+
+    <div class="mt-4">
+        <label class="form-label">Upload Resume</label>
+        <div class="d-flex gap-2">
+            <input
+                class="form-control"
+                type="file"
+                file-model="$ctrl.resumeFile"
+            />
+            <button
+                class="btn hc-btn-outline"
+                type="button"
+                ng-click="$ctrl.uploadResume()"
+            >
+                Upload
+            </button>
+        </div>
+        <div class="text-success mt-2" ng-if="$ctrl.message">
+            {{$ctrl.message}}
+        </div>
+        <div class="text-danger" ng-if="$ctrl.errorMessage">
+            {{$ctrl.errorMessage}}
+        </div>
+    </div>
+</div>
