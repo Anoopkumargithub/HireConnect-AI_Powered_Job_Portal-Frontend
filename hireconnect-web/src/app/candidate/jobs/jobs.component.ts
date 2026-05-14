@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ApiConfigService } from '../../core/services/api-config.service';
 
 interface Job {
   jobId: string;
@@ -234,6 +235,7 @@ export class JobsComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private apiConfig = inject(ApiConfigService);
 
   jobs: Job[] = [];
   loading = true;
@@ -271,7 +273,7 @@ export class JobsComponent implements OnInit {
     this.loading = true;
     this.cdr.detectChanges();
 
-    let url = `https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs?page=${this.page}&pageSize=${this.pageSize}`;
+    let url = `${this.apiConfig.getApiUrl()}/jobs?page=${this.page}&pageSize=${this.pageSize}`;
     if (this.keyword) url += `&keyword=${encodeURIComponent(this.keyword)}`;
     if (this.location) url += `&location=${encodeURIComponent(this.location)}`;
     if (this.category) url += `&category=${this.category}`;
@@ -327,7 +329,7 @@ export class JobsComponent implements OnInit {
       resumeUrl: this.resumeUrl || null
     };
 
-    this.http.post<any>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/applications', payload, { headers: this.getHeaders() }).subscribe({
+    this.http.post<any>(this.apiConfig.getEndpoint('/applications'), payload, { headers: this.getHeaders() }).subscribe({
       next: () => {
         this.appliedJobIds.add(this.selectedJob!.jobId);
         this.applySuccess = '🎉 Application submitted successfully!';

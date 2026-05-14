@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ApiConfigService } from '../../core/services/api-config.service';
 
 @Component({
   selector: 'app-register',
@@ -184,6 +185,7 @@ export class RegisterComponent {
 
   private http = inject(HttpClient);
   private router = inject(Router);
+  private apiConfig = inject(ApiConfigService);
 
   register() {
     if (!this.form.email || !this.form.password) {
@@ -194,7 +196,9 @@ export class RegisterComponent {
     this.errorMessage = '';
     this.successMessage = '';
     
-    this.http.post('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/auth/register', this.form).subscribe({
+    const registerUrl = this.apiConfig.getEndpoint('/auth/register');
+    
+    this.http.post(registerUrl, this.form).subscribe({
       next: () => {
         this.successMessage = 'Registration successful. Redirecting to login...';
         setTimeout(() => {

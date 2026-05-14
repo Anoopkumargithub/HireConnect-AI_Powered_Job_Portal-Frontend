@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterLink, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
+import { ApiConfigService } from '../../core/services/api-config.service';
 
 @Component({
   selector: 'app-login',
@@ -143,6 +144,7 @@ export class LoginComponent {
 
   private http = inject(HttpClient);
   private router = inject(Router);
+  private apiConfig = inject(ApiConfigService);
 
   login() {
     if (!this.credentials.email || !this.credentials.password) {
@@ -152,7 +154,9 @@ export class LoginComponent {
     
     this.errorMessage = '';
     
-    this.http.post<any>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/auth/login', this.credentials).subscribe({
+    const loginUrl = this.apiConfig.getEndpoint('/auth/login');
+    
+    this.http.post<any>(loginUrl, this.credentials).subscribe({
       next: (response) => {
         const token = response.token || response.accessToken;
         if (token) {

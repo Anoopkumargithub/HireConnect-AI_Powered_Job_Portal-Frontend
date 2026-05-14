@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { ApiConfigService } from '../../core/services/api-config.service';
 
 interface Job {
   jobId: string;
@@ -255,6 +256,7 @@ export class MyJobsComponent implements OnInit {
   private http = inject(HttpClient);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
+  private apiConfig = inject(ApiConfigService);
 
   jobs: Job[] = [];
   loading = true;
@@ -289,7 +291,7 @@ export class MyJobsComponent implements OnInit {
   loadJobs() {
     this.loading = true;
     this.cdr.detectChanges();
-    this.http.get<any>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs/mine', { headers: this.getHeaders() }).subscribe({
+    this.http.get<any>(this.apiConfig.getEndpoint('/jobs/mine'), { headers: this.getHeaders() }).subscribe({
       next: (res) => {
         this.jobs = res.items ?? res ?? [];
         this.loading = false;
@@ -329,7 +331,7 @@ export class MyJobsComponent implements OnInit {
       experienceMinYears: +this.form.experienceMinYears
     };
 
-    this.http.post<Job>('https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs', payload, { headers: this.getHeaders() }).subscribe({
+    this.http.post<Job>(this.apiConfig.getEndpoint('/jobs'), payload, { headers: this.getHeaders() }).subscribe({
       next: () => {
         this.posting = false;
         this.showModal = false;
@@ -346,7 +348,7 @@ export class MyJobsComponent implements OnInit {
 
   deleteJob(id: string) {
     if (!confirm('Are you sure you want to delete this job?')) return;
-    this.http.delete(`https://hireconnect-ai-powered-job-portal-oelc.onrender.com/api/jobs/${id}`, { headers: this.getHeaders() }).subscribe({
+    this.http.delete(this.apiConfig.getEndpoint(`/jobs/${id}`), { headers: this.getHeaders() }).subscribe({
       next: () => this.loadJobs(),
       error: () => {
         alert('Failed to delete job.');
