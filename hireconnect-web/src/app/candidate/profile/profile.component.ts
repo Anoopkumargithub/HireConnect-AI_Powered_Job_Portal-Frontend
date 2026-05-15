@@ -33,6 +33,7 @@ interface CandidateProfile {
         <div class="nav-links">
           <a class="nav-link" (click)="router.navigate(['/candidate/jobs'])">Find Jobs</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/applications'])">My Applications</a>
+          <a class="nav-link" (click)="router.navigate(['/candidate/interviews'])">Interviews</a>
           <a class="nav-link active">My Profile</a>
         </div>
         <button class="logout-btn" (click)="logout()">Logout</button>

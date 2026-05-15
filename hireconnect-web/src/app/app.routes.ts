@@ -30,6 +30,10 @@ export const routes: Routes = [
     loadComponent: () => import('./candidate/applications/applications.component').then(m => m.CandidateApplicationsComponent)
   },
   {
+    path: 'candidate/interviews',
+    loadComponent: () => import('./candidate/interviews/interviews.component').then(m => m.CandidateInterviewsComponent)
+  },
+  {
     path: 'candidate/profile',
     loadComponent: () => import('./candidate/profile/profile.component').then(m => m.CandidateProfileComponent)
   },
