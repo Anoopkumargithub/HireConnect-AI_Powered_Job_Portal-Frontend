@@ -50,6 +50,10 @@ const STATUS_COLORS: Record<number, string> = {
       <!-- Navbar -->
       <nav class="navbar">
         <div class="logo">HireConnect <span>Recruiter</span></div>
+        <div class="nav-links">
+          <a class="nav-link active">My Jobs</a>
+          <a class="nav-link" (click)="router.navigate(['/recruiter/applications'])">Applications</a>
+        </div>
         <button class="logout-btn" (click)="logout()">Logout</button>
       </nav>
 
@@ -197,6 +201,10 @@ const STATUS_COLORS: Record<number, string> = {
     .navbar { background: white; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 1px 3px rgba(0,0,0,0.08); position: sticky; top: 0; z-index: 100; }
     .logo { font-size: 1.4rem; font-weight: 700; color: #1e293b; }
     .logo span { color: #6366f1; }
+    .nav-links { display: flex; gap: 1.5rem; margin-left: 2rem; flex: 1; }
+    .nav-link { color: #64748b; text-decoration: none; font-weight: 600; cursor: pointer; padding: 0.5rem 0; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .nav-link:hover { color: #6366f1; }
+    .nav-link.active { color: #6366f1; border-bottom-color: #6366f1; }
     .logout-btn { background: transparent; border: 1px solid #e2e8f0; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 500; color: #64748b; transition: all 0.2s; }
     .logout-btn:hover { background: #f1f5f9; color: #1e293b; }
     .content { max-width: 1200px; margin: 0 auto; padding: 2rem; }
@@ -254,7 +262,7 @@ const STATUS_COLORS: Record<number, string> = {
 })
 export class MyJobsComponent implements OnInit {
   private http = inject(HttpClient);
-  private router = inject(Router);
+  public router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private apiConfig = inject(ApiConfigService);
 

@@ -14,8 +14,16 @@ export const routes: Routes = [
     loadComponent: () => import('./recruiter/my-jobs/my-jobs.component').then(m => m.MyJobsComponent)
   },
   {
+    path: 'recruiter/applications',
+    loadComponent: () => import('./recruiter/applications/applications.component').then(m => m.RecruiterApplicationsComponent)
+  },
+  {
     path: 'candidate/jobs',
     loadComponent: () => import('./candidate/jobs/jobs.component').then(m => m.JobsComponent)
+  },
+  {
+    path: 'candidate/applications',
+    loadComponent: () => import('./candidate/applications/applications.component').then(m => m.CandidateApplicationsComponent)
   },
   {
     path: 'admin',
