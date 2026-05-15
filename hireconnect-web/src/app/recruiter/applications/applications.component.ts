@@ -41,6 +41,7 @@ const APP_STATUS_COLORS: Record<number, string> = {
         <div class="nav-links">
           <a class="nav-link" (click)="router.navigate(['/recruiter/my-jobs'])">My Jobs</a>
           <a class="nav-link active">Applications</a>
+          <a class="nav-link" (click)="router.navigate(['/recruiter/profile'])">Company Profile</a>
         </div>
         <button class="logout-btn" (click)="logout()">Logout</button>
       </nav>
@@ -115,13 +116,70 @@ const APP_STATUS_COLORS: Record<number, string> = {
               
               <div class="action-buttons">
                 <button class="btn-sm btn-success" *ngIf="app.status === 1" (click)="updateStatus(app.applicationId, 2)">Shortlist</button>
+                <button class="btn-sm btn-primary-alt" *ngIf="app.status === 2" (click)="openScheduleModal(app)">Schedule Interview</button>
                 <button class="btn-sm btn-danger" *ngIf="app.status === 1 || app.status === 2 || app.status === 3" (click)="updateStatus(app.applicationId, 5)">Reject</button>
-                <!-- Add more actions as needed, like Schedule Interview -->
               </div>
             </div>
           </div>
         </div>
       </main>
+
+      <!-- Schedule Interview Modal -->
+      <div class="modal-overlay" *ngIf="showScheduleModal" (click)="closeScheduleModal()">
+        <div class="modal" (click)="$event.stopPropagation()">
+          <div class="modal-header">
+            <h2>Schedule Interview</h2>
+            <button class="close-btn" (click)="closeScheduleModal()">✕</button>
+          </div>
+
+          <div class="modal-body">
+            <div class="error-message" *ngIf="scheduleError">{{ scheduleError }}</div>
+            <div class="success-message" *ngIf="scheduleSuccess">{{ scheduleSuccess }}</div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label>Date & Time *</label>
+                <input type="datetime-local" [(ngModel)]="interviewForm.scheduledAt" />
+              </div>
+              <div class="form-group">
+                <label>Duration (minutes) *</label>
+                <input type="number" [(ngModel)]="interviewForm.durationMinutes" min="15" max="480" />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label>Interview Mode *</label>
+              <select [(ngModel)]="interviewForm.mode">
+                <option value="1">Virtual / Video</option>
+                <option value="2">In-Person</option>
+                <option value="3">Phone</option>
+              </select>
+            </div>
+
+            <div class="form-group" *ngIf="interviewForm.mode == '1'">
+              <label>Meeting Link</label>
+              <input type="url" [(ngModel)]="interviewForm.meetLink" placeholder="https://meet.google.com/... " />
+            </div>
+
+            <div class="form-group" *ngIf="interviewForm.mode == '2'">
+              <label>Location</label>
+              <input type="text" [(ngModel)]="interviewForm.location" placeholder="Office address or meeting room" />
+            </div>
+
+            <div class="form-group">
+              <label>Recruiter Notes (Optional)</label>
+              <textarea [(ngModel)]="interviewForm.recruiterNotes" rows="3" placeholder="Notes or instructions for the candidate..."></textarea>
+            </div>
+          </div>
+
+          <div class="modal-footer">
+            <button class="btn-outline" (click)="closeScheduleModal()">Cancel</button>
+            <button class="btn-primary" (click)="submitSchedule()" [disabled]="scheduling">
+              {{ scheduling ? 'Scheduling...' : 'Confirm Schedule' }}
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   `,
   styles: [`
@@ -142,8 +200,8 @@ const APP_STATUS_COLORS: Record<number, string> = {
     .page-header p { margin: 0; color: #64748b; }
     .filter-section { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); margin-bottom: 2rem; border: 1px solid #e2e8f0; }
     .form-group label { display: block; margin-bottom: 0.5rem; color: #374151; font-weight: 600; font-size: 0.9rem; }
-    .form-group select { width: 100%; max-width: 400px; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; color: #1e293b; background: #fafafa; outline: none; transition: border-color 0.2s; }
-    .form-group select:focus { border-color: #6366f1; background: white; }
+    .form-group select, .form-group input, .form-group textarea { width: 100%; padding: 0.75rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 8px; font-size: 0.95rem; color: #1e293b; background: #fafafa; outline: none; transition: border-color 0.2s; font-family: inherit; }
+    .form-group select:focus, .form-group input:focus, .form-group textarea:focus { border-color: #6366f1; background: white; }
     .loading-state, .empty-state { text-align: center; padding: 4rem; }
     .spinner { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #6366f1; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
@@ -166,14 +224,33 @@ const APP_STATUS_COLORS: Record<number, string> = {
     .app-details strong { display: block; margin-bottom: 0.25rem; color: #0f172a; }
     .app-details p { margin: 0; line-height: 1.5; }
     .app-actions { display: flex; justify-content: space-between; align-items: center; border-top: 1px solid #f1f5f9; padding-top: 1.25rem; }
-    .btn-outline { display: inline-block; background: white; border: 1.5px solid #e2e8f0; color: #475569; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s; font-size: 0.85rem; }
+    .btn-outline { display: inline-block; background: white; border: 1.5px solid #e2e8f0; color: #475569; padding: 0.5rem 1rem; border-radius: 8px; font-weight: 600; text-decoration: none; transition: all 0.2s; font-size: 0.85rem; cursor: pointer; }
     .btn-outline:hover { border-color: #6366f1; color: #6366f1; }
     .action-buttons { display: flex; gap: 0.5rem; }
     .btn-sm { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.85rem; font-weight: 600; border: none; cursor: pointer; transition: all 0.2s; }
     .btn-success { background: #d1fae5; color: #059669; }
     .btn-success:hover { background: #10b981; color: white; }
+    .btn-primary-alt { background: #e0e7ff; color: #4f46e5; }
+    .btn-primary-alt:hover { background: #4f46e5; color: white; }
     .btn-danger { background: #fee2e2; color: #ef4444; }
     .btn-danger:hover { background: #ef4444; color: white; }
+    .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+    .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+    .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* Modal */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
+    .modal { background: white; border-radius: 20px; width: 100%; max-width: 500px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; padding: 1.5rem 2rem; border-bottom: 1px solid #f1f5f9; position: sticky; top: 0; background: white; z-index: 1; border-radius: 20px 20px 0 0; }
+    .modal-header h2 { margin: 0; color: #0f172a; font-size: 1.4rem; }
+    .close-btn { background: #f1f5f9; border: none; width: 32px; height: 32px; border-radius: 50%; cursor: pointer; font-size: 1rem; display: flex; align-items: center; justify-content: center; transition: all 0.2s; }
+    .close-btn:hover { background: #e2e8f0; }
+    .modal-body { padding: 2rem; }
+    .modal-footer { padding: 1.5rem 2rem; border-top: 1px solid #f1f5f9; display: flex; gap: 1rem; justify-content: flex-end; }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    .form-group { margin-bottom: 1.2rem; }
+    .error-message { background: #fee2e2; color: #ef4444; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.875rem; }
+    .success-message { background: #d1fae5; color: #059669; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1.5rem; font-size: 0.875rem; font-weight: 600; }
   `]
 })
 export class RecruiterApplicationsComponent implements OnInit {
@@ -186,6 +263,22 @@ export class RecruiterApplicationsComponent implements OnInit {
   selectedJobId = '';
   applications: Application[] = [];
   loading = false;
+
+  // Interview Schedule State
+  showScheduleModal = false;
+  scheduling = false;
+  scheduleError = '';
+  scheduleSuccess = '';
+  targetApplication: Application | null = null;
+
+  interviewForm = {
+    scheduledAt: '',
+    durationMinutes: 45,
+    mode: '1',
+    meetLink: '',
+    location: '',
+    recruiterNotes: ''
+  };
 
   statusLabel = (v: number) => APP_STATUS_LABELS[v] ?? 'Unknown';
   statusColor = (v: number) => APP_STATUS_COLORS[v] ?? '#64748b';
@@ -239,6 +332,85 @@ export class RecruiterApplicationsComponent implements OnInit {
       },
       error: () => {
         alert('Failed to update status.');
+      }
+    });
+  }
+
+  openScheduleModal(app: Application) {
+    this.targetApplication = app;
+    this.scheduleError = '';
+    this.scheduleSuccess = '';
+    
+    // Set default date to tomorrow
+    const tomorrow = new Date();
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    tomorrow.setHours(10, 0, 0, 0);
+    
+    // Format for datetime-local: YYYY-MM-DDThh:mm
+    const year = tomorrow.getFullYear();
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0');
+    const day = String(tomorrow.getDate()).padStart(2, '0');
+    const hours = String(tomorrow.getHours()).padStart(2, '0');
+    const minutes = String(tomorrow.getMinutes()).padStart(2, '0');
+    
+    this.interviewForm = {
+      scheduledAt: `${year}-${month}-${day}T${hours}:${minutes}`,
+      durationMinutes: 45,
+      mode: '1',
+      meetLink: '',
+      location: '',
+      recruiterNotes: ''
+    };
+    
+    this.showScheduleModal = true;
+  }
+
+  closeScheduleModal() {
+    this.showScheduleModal = false;
+    this.targetApplication = null;
+  }
+
+  submitSchedule() {
+    if (!this.interviewForm.scheduledAt) {
+      this.scheduleError = 'Please select a valid date and time.';
+      return;
+    }
+
+    this.scheduling = true;
+    this.scheduleError = '';
+    this.scheduleSuccess = '';
+
+    const payload = {
+      applicationId: this.targetApplication!.applicationId,
+      jobId: this.targetApplication!.jobId,
+      candidateId: this.targetApplication!.candidateId,
+      scheduledAt: new Date(this.interviewForm.scheduledAt).toISOString(),
+      durationMinutes: this.interviewForm.durationMinutes,
+      mode: parseInt(this.interviewForm.mode, 10),
+      meetLink: this.interviewForm.meetLink || null,
+      location: this.interviewForm.location || null,
+      recruiterNotes: this.interviewForm.recruiterNotes || null,
+      candidateEmail: 'candidate@example.com' // Placeholder as per API requirement
+    };
+
+    this.http.post(this.apiConfig.getEndpoint('/interviews'), payload, { headers: this.getHeaders() }).subscribe({
+      next: () => {
+        this.scheduleSuccess = 'Interview scheduled successfully!';
+        this.targetApplication!.status = 3; // Interview Scheduled
+        
+        // Also update application status backend
+        this.http.patch(this.apiConfig.getEndpoint(`/applications/${this.targetApplication!.applicationId}/status`), { newStatus: 3 }, { headers: this.getHeaders() }).subscribe();
+
+        setTimeout(() => {
+          this.closeScheduleModal();
+          this.scheduling = false;
+          this.cdr.detectChanges();
+        }, 1500);
+      },
+      error: (err) => {
+        this.scheduleError = err.error?.detail || 'Failed to schedule interview. Please try again.';
+        this.scheduling = false;
+        this.cdr.detectChanges();
       }
     });
   }

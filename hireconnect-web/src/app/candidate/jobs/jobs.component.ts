@@ -46,6 +46,7 @@ const TYPE_LABELS: Record<number, string> = {
         <div class="nav-links">
           <a class="nav-link active">Find Jobs</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/applications'])">My Applications</a>
+          <a class="nav-link" (click)="router.navigate(['/candidate/profile'])">My Profile</a>
         </div>
         <button class="logout-btn" (click)="logout()">Logout</button>
       </nav>
