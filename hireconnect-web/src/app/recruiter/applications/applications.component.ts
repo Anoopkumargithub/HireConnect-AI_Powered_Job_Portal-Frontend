@@ -41,6 +41,7 @@ const APP_STATUS_COLORS: Record<number, string> = {
         <div class="nav-links">
           <a class="nav-link" (click)="router.navigate(['/recruiter/my-jobs'])">My Jobs</a>
           <a class="nav-link active">Applications</a>
+          <a class="nav-link" (click)="router.navigate(['/recruiter/analytics'])">Analytics</a>
           <a class="nav-link" (click)="router.navigate(['/recruiter/profile'])">Company Profile</a>
         </div>
         <button class="logout-btn" (click)="logout()">Logout</button>
