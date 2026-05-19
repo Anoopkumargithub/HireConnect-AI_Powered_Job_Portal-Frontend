@@ -1,3 +1,4 @@
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,7 +30,7 @@ interface RecruiterProfile {
 @Component({
   selector: 'app-recruiter-profile',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [NotificationBellComponent, CommonModule, FormsModule],
   template: `
     <div class="dashboard-container">
       <nav class="navbar">
@@ -39,8 +40,12 @@ interface RecruiterProfile {
           <a class="nav-link" (click)="router.navigate(['/recruiter/applications'])">Applications</a>
           <a class="nav-link" (click)="router.navigate(['/recruiter/analytics'])">Analytics</a>
           <a class="nav-link active">Company Profile</a>
+          <a class="nav-link" (click)="router.navigate(['/recruiter/billing'])">Billing</a>
         </div>
-        <button class="logout-btn" (click)="logout()">Logout</button>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+          <app-notification-bell></app-notification-bell>
+          <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
       </nav>
 
       <main class="content">

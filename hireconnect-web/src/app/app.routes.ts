@@ -26,8 +26,16 @@ export const routes: Routes = [
     loadComponent: () => import('./recruiter/analytics/analytics.component').then(m => m.AnalyticsComponent)
   },
   {
+    path: 'recruiter/billing',
+    loadComponent: () => import('./recruiter/billing/billing.component').then(m => m.BillingComponent)
+  },
+  {
     path: 'candidate/jobs',
     loadComponent: () => import('./candidate/jobs/jobs.component').then(m => m.JobsComponent)
+  },
+  {
+    path: 'candidate/saved-jobs',
+    loadComponent: () => import('./candidate/saved-jobs/saved-jobs.component').then(m => m.SavedJobsComponent)
   },
   {
     path: 'candidate/applications',

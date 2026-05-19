@@ -1,30 +1,12 @@
-import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { ApiConfigService } from '../../core/services/api-config.service';
-import { BookmarkService } from '../../core/services/bookmark.service';
-
-interface Job {
-  jobId: string;
-  recruiterId: string;
-  title: string;
-  category: number;
-  type: number;
-  location: string;
-  isRemote: boolean;
-  salaryMin?: number;
-  salaryMax?: number;
-  currency?: string;
-  description: string;
-  requiredSkills: string[];
-  experienceMinYears: number;
-  status: number;
-  postedAt?: string;
-  viewCount: number;
-}
+import { BookmarkService, Job } from '../../core/services/bookmark.service';
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
+import { Subscription } from 'rxjs';
 
 const CATEGORY_LABELS: Record<number, string> = {
   1: 'Software Engineering', 2: 'Data Science', 3: 'DevOps',
@@ -37,17 +19,17 @@ const TYPE_LABELS: Record<number, string> = {
 };
 
 @Component({
-  selector: 'app-jobs',
+  selector: 'app-saved-jobs',
   standalone: true,
-  imports: [NotificationBellComponent, CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NotificationBellComponent],
   template: `
     <div class="dashboard-container">
       <!-- Navbar -->
       <nav class="navbar">
         <div class="logo">HireConnect <span>Candidate</span></div>
         <div class="nav-links">
-          <a class="nav-link active">Find Jobs</a>
-                    <a class="nav-link" (click)="router.navigate(['/candidate/saved-jobs'])">Saved Jobs</a>
+          <a class="nav-link" (click)="router.navigate(['/candidate/jobs'])">Find Jobs</a>
+          <a class="nav-link active">Saved Jobs</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/applications'])">My Applications</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/interviews'])">Interviews</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/profile'])">My Profile</a>
@@ -61,44 +43,28 @@ const TYPE_LABELS: Record<number, string> = {
       <!-- Main Content -->
       <main class="content">
         <header class="page-header">
-          <h1>Find Your Next Job</h1>
-          <p>Discover opportunities matched to your skills.</p>
+          <h1>Saved Jobs</h1>
+          <p>Review the opportunities you've bookmarked.</p>
         </header>
 
-        <!-- Search bar -->
-        <div class="search-bar">
-          <input type="text" [(ngModel)]="keyword" placeholder="Search by title, skill, or keyword..." (keyup.enter)="search()" />
-          <input type="text" [(ngModel)]="location" placeholder="Location" (keyup.enter)="search()" />
-          <select [(ngModel)]="category" (change)="search()">
-            <option [value]="''">All Categories</option>
-            <option *ngFor="let cat of categories" [value]="cat.value">{{ cat.label }}</option>
-          </select>
-          <button class="btn-primary" (click)="search()">Search</button>
-        </div>
-
-        <!-- Loading -->
-        <div class="loading-state" *ngIf="loading">
-          <div class="spinner"></div>
-          <p>Searching for jobs...</p>
-        </div>
-
         <!-- Empty state -->
-        <div class="empty-state" *ngIf="!loading && jobs.length === 0">
-          <div class="empty-icon">🔍</div>
-          <h3>No jobs found</h3>
-          <p>Try adjusting your search filters.</p>
+        <div class="empty-state" *ngIf="jobs.length === 0">
+          <div class="empty-icon">🔖</div>
+          <h3>No saved jobs</h3>
+          <p>You haven't bookmarked any jobs yet. Browse available jobs and save the ones you like.</p>
+          <button class="btn-primary mt-4" (click)="router.navigate(['/candidate/jobs'])">Browse Jobs</button>
         </div>
 
         <!-- Jobs list -->
-        <div class="jobs-list" *ngIf="!loading && jobs.length > 0">
-          <div class="result-count">{{ total }} job{{ total !== 1 ? 's' : '' }} found</div>
+        <div class="jobs-list" *ngIf="jobs.length > 0">
+          <div class="result-count">{{ jobs.length }} saved job{{ jobs.length !== 1 ? 's' : '' }}</div>
 
           <div class="job-card" *ngFor="let job of jobs">
             <div class="job-card-main">
               <div class="job-info">
                 <div class="job-title-row">
                   <div class="job-title">{{ job.title }}</div>
-                  <button class="bookmark-btn" [class.active]="isBookmarked(job)" (click)="toggleBookmark(job)" title="Save job">
+                  <button class="bookmark-btn active" (click)="toggleBookmark(job)" title="Remove from saved jobs">
                     <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path></svg>
                   </button>
                 </div>
@@ -113,7 +79,6 @@ const TYPE_LABELS: Record<number, string> = {
               </div>
               <div class="job-right">
                 <div class="job-exp">{{ job.experienceMinYears }}+ yrs</div>
-                <div class="job-views">👁 {{ job.viewCount }}</div>
                 <button class="btn-apply"
                   [class.applied]="appliedJobIds.has(job.jobId)"
                   [disabled]="appliedJobIds.has(job.jobId)"
@@ -123,13 +88,6 @@ const TYPE_LABELS: Record<number, string> = {
               </div>
             </div>
             <div class="job-desc">{{ (job.description || '') | slice:0:200 }}{{ (job.description || '').length > 200 ? '...' : '' }}</div>
-          </div>
-
-          <!-- Pagination -->
-          <div class="pagination" *ngIf="totalPages > 1">
-            <button [disabled]="page === 1" (click)="changePage(page - 1)">← Prev</button>
-            <span>Page {{ page }} of {{ totalPages }}</span>
-            <button [disabled]="page === totalPages" (click)="changePage(page + 1)">Next →</button>
           </div>
         </div>
       </main>
@@ -190,18 +148,16 @@ const TYPE_LABELS: Record<number, string> = {
     .page-header { margin-bottom: 1.5rem; }
     .page-header h1 { margin: 0 0 0.25rem 0; color: #0f172a; font-size: 1.8rem; }
     .page-header p { margin: 0; color: #64748b; }
-    .search-bar { display: flex; gap: 0.75rem; margin-bottom: 2rem; flex-wrap: wrap; }
-    .search-bar input, .search-bar select { flex: 1; min-width: 160px; padding: 0.85rem 1rem; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 0.95rem; color: #1e293b; background: white; transition: all 0.2s; font-family: inherit; }
-    .search-bar input:focus, .search-bar select:focus { outline: none; border-color: #10b981; box-shadow: 0 0 0 3px rgba(16,185,129,0.1); }
+    
     .btn-primary { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.85rem 2rem; border-radius: 10px; font-weight: 700; cursor: pointer; box-shadow: 0 4px 12px rgba(16,185,129,0.3); transition: all 0.2s; font-size: 0.95rem; white-space: nowrap; }
     .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.4); }
-    .loading-state { text-align: center; padding: 5rem; }
-    .spinner { width: 40px; height: 40px; border: 3px solid #e2e8f0; border-top-color: #10b981; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-    .loading-state p, .empty-state p { color: #64748b; }
+    .mt-4 { margin-top: 1rem; }
+    
     .empty-state { text-align: center; padding: 5rem; }
+    .empty-state p { color: #64748b; }
     .empty-icon { font-size: 4rem; margin-bottom: 1rem; }
     .empty-state h3 { color: #1e293b; margin: 0 0 0.5rem; }
+    
     .jobs-list { display: flex; flex-direction: column; gap: 1rem; }
     .result-count { color: #64748b; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 500; }
     .job-card { background: white; border-radius: 16px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border: 1px solid #f1f5f9; transition: all 0.2s; }
@@ -215,23 +171,19 @@ const TYPE_LABELS: Record<number, string> = {
     .bookmark-btn:hover { color: #94a3b8; background: #f1f5f9; }
     .bookmark-btn.active { color: #f59e0b; }
     .bookmark-btn.active:hover { color: #d97706; }
+    
     .job-meta { font-size: 0.85rem; color: #10b981; font-weight: 600; margin-bottom: 0.25rem; }
     .job-location, .job-salary { font-size: 0.875rem; color: #64748b; margin-bottom: 0.25rem; }
     .job-skills { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
     .skill-tag { background: #ecfdf5; color: #059669; padding: 0.2rem 0.6rem; border-radius: 6px; font-size: 0.75rem; font-weight: 600; }
     .job-right { display: flex; flex-direction: column; align-items: flex-end; gap: 0.5rem; min-width: 130px; }
     .job-exp { background: #eff6ff; color: #3b82f6; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
-    .job-views { font-size: 0.8rem; color: #94a3b8; }
     .btn-apply { background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.65rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; transition: all 0.2s; white-space: nowrap; font-size: 0.9rem; }
     .btn-apply:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(16,185,129,0.4); }
     .btn-apply.applied { background: #d1fae5; color: #059669; cursor: default; }
     .btn-apply:disabled { opacity: 0.7; cursor: not-allowed; }
     .job-desc { color: #64748b; font-size: 0.875rem; line-height: 1.6; border-top: 1px solid #f1f5f9; padding-top: 1rem; }
-    .pagination { display: flex; justify-content: center; align-items: center; gap: 1rem; margin-top: 2rem; }
-    .pagination button { background: white; border: 1.5px solid #e2e8f0; padding: 0.5rem 1.2rem; border-radius: 8px; cursor: pointer; font-weight: 600; color: #374151; transition: all 0.2s; }
-    .pagination button:hover:not(:disabled) { border-color: #10b981; color: #10b981; }
-    .pagination button:disabled { opacity: 0.4; cursor: not-allowed; }
-    .pagination span { color: #64748b; font-size: 0.9rem; }
+    
     /* Modal */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
     .modal { background: white; border-radius: 20px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto; box-shadow: 0 25px 50px rgba(0,0,0,0.2); }
@@ -258,7 +210,7 @@ const TYPE_LABELS: Record<number, string> = {
     .success-message { background: #d1fae5; color: #059669; padding: 0.75rem 1rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.875rem; font-weight: 600; }
   `]
 })
-export class JobsComponent implements OnInit {
+export class SavedJobsComponent implements OnInit, OnDestroy {
   private http = inject(HttpClient);
   public router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -266,14 +218,7 @@ export class JobsComponent implements OnInit {
   private bookmarkService = inject(BookmarkService);
 
   jobs: Job[] = [];
-  loading = true;
-  keyword = '';
-  location = '';
-  category: number | '' = '';
-  page = 1;
-  pageSize = 10;
-  total = 0;
-  totalPages = 1;
+  private subscription?: Subscription;
 
   // Apply modal state
   showApplyModal = false;
@@ -285,7 +230,6 @@ export class JobsComponent implements OnInit {
   applySuccess = '';
   appliedJobIds = new Set<string>();
 
-  categories = Object.entries(CATEGORY_LABELS).map(([v, l]) => ({ value: +v, label: l }));
   categoryLabel = (v: number) => CATEGORY_LABELS[v] ?? 'Other';
   typeLabel = (v: number) => TYPE_LABELS[v] ?? '';
 
@@ -294,40 +238,26 @@ export class JobsComponent implements OnInit {
     return new HttpHeaders({ 'Authorization': `Bearer ${token}` });
   }
 
-  ngOnInit() { this.search(); }
-
-  search(resetPage = true) {
-    if (resetPage) this.page = 1;
-    this.loading = true;
-    this.cdr.detectChanges();
-
-    let url = `${this.apiConfig.getApiUrl()}/jobs?page=${this.page}&pageSize=${this.pageSize}`;
-    if (this.keyword) url += `&keyword=${encodeURIComponent(this.keyword)}`;
-    if (this.location) url += `&location=${encodeURIComponent(this.location)}`;
-    if (this.category) url += `&category=${this.category}`;
-
-    this.http.get<any>(url).subscribe({
+  ngOnInit() {
+    this.subscription = this.bookmarkService.bookmarks$.subscribe(bookmarks => {
+      this.jobs = bookmarks;
+      this.cdr.detectChanges();
+    });
+    
+    // Optionally fetch applied jobs to disable Apply button for those
+    this.http.get<any>(this.apiConfig.getEndpoint('/applications'), { headers: this.getHeaders() }).subscribe({
       next: (res) => {
-        this.jobs = res.items ?? res ?? [];
-        this.total = res.total ?? this.jobs.length;
-        this.totalPages = Math.ceil(this.total / this.pageSize);
-        this.loading = false;
-        this.cdr.detectChanges();
-      },
-      error: () => {
-        this.loading = false;
+        const apps = res.items || [];
+        apps.forEach((app: any) => this.appliedJobIds.add(app.jobId));
         this.cdr.detectChanges();
       }
     });
   }
 
-  changePage(p: number) {
-    this.page = p;
-    this.search(false);
-  }
-
-  isBookmarked(job: Job): boolean {
-    return this.bookmarkService.isBookmarked(job.jobId);
+  ngOnDestroy() {
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   toggleBookmark(job: Job) {

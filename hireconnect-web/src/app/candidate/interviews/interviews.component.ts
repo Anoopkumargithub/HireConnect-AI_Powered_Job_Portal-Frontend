@@ -1,3 +1,4 @@
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -49,18 +50,22 @@ const INTERVIEW_MODE_LABELS: Record<number, string> = {
 @Component({
   selector: 'app-candidate-interviews',
   standalone: true,
-  imports: [CommonModule],
+  imports: [NotificationBellComponent, CommonModule],
   template: `
     <div class="dashboard-container">
       <nav class="navbar">
         <div class="logo">HireConnect <span>Candidate</span></div>
         <div class="nav-links">
           <a class="nav-link" (click)="router.navigate(['/candidate/jobs'])">Find Jobs</a>
+                    <a class="nav-link" (click)="router.navigate(['/candidate/saved-jobs'])">Saved Jobs</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/applications'])">My Applications</a>
           <a class="nav-link active">Interviews</a>
           <a class="nav-link" (click)="router.navigate(['/candidate/profile'])">My Profile</a>
         </div>
-        <button class="logout-btn" (click)="logout()">Logout</button>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+          <app-notification-bell></app-notification-bell>
+          <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
       </nav>
 
       <main class="content">

@@ -1,3 +1,4 @@
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -19,6 +20,8 @@ interface Application {
   coverLetter?: string;
   resumeUrl?: string;
   aiMatchScore?: number;
+  oneLineSummary?: string;
+  interviewMarks?: number;
 }
 
 const APP_STATUS_LABELS: Record<number, string> = {
@@ -32,7 +35,7 @@ const APP_STATUS_COLORS: Record<number, string> = {
 @Component({
   selector: 'app-recruiter-applications',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [NotificationBellComponent, CommonModule, FormsModule],
   template: `
     <div class="dashboard-container">
       <!-- Navbar -->
@@ -43,8 +46,12 @@ const APP_STATUS_COLORS: Record<number, string> = {
           <a class="nav-link active">Applications</a>
           <a class="nav-link" (click)="router.navigate(['/recruiter/analytics'])">Analytics</a>
           <a class="nav-link" (click)="router.navigate(['/recruiter/profile'])">Company Profile</a>
+          <a class="nav-link" (click)="router.navigate(['/recruiter/billing'])">Billing</a>
         </div>
-        <button class="logout-btn" (click)="logout()">Logout</button>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+          <app-notification-bell></app-notification-bell>
+          <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
       </nav>
 
       <!-- Main Content -->
@@ -55,13 +62,21 @@ const APP_STATUS_COLORS: Record<number, string> = {
         </header>
 
         <!-- Job Selector -->
-        <div class="filter-section">
-          <div class="form-group">
+        <div class="filter-section" style="display: flex; justify-content: space-between; align-items: flex-end; gap: 1rem; flex-wrap: wrap;">
+          <div class="form-group" style="flex: 1; margin-bottom: 0; min-width: 250px;">
             <label>Select Job to View Applications</label>
             <select [(ngModel)]="selectedJobId" (change)="loadApplications()">
               <option value="">-- Choose a Job --</option>
               <option *ngFor="let job of jobs" [value]="job.jobId">{{ job.title }}</option>
             </select>
+          </div>
+          <div class="action-group" style="display: flex; gap: 0.5rem;">
+            <button class="btn-outline" *ngIf="selectedJobId && applications.length > 0" (click)="toggleSortByMarks()">
+              {{ sortByMarks ? 'Unsort' : 'Sort by Marks' }}
+            </button>
+            <button class="btn-ai" *ngIf="selectedJobId && applications.length > 0" (click)="generateAiInsights()" [disabled]="generatingAi">
+              <span class="ai-icon">✨</span> {{ generatingAi ? 'Analyzing Profiles...' : 'Generate AI Insights' }}
+            </button>
           </div>
         </div>
 
@@ -105,11 +120,24 @@ const APP_STATUS_COLORS: Record<number, string> = {
               <div class="score-bar">
                 <div class="score-fill" [style.width]="app.aiMatchScore + '%'"></div>
               </div>
+              <div class="ai-summary" *ngIf="app.oneLineSummary">
+                <strong>💡 AI Insight:</strong> {{ app.oneLineSummary }}
+              </div>
             </div>
 
             <div class="app-details" *ngIf="app.coverLetter">
               <strong>Cover Letter:</strong>
               <p>{{ (app.coverLetter | slice:0:150) }}{{ app.coverLetter.length > 150 ? '...' : '' }}</p>
+            </div>
+
+            <div class="marks-section" *ngIf="app.status >= 3">
+              <div class="score-header">
+                <span>Interview Marks (0-100)</span>
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <input type="number" [(ngModel)]="app.interviewMarks" placeholder="Score" min="0" max="100" class="marks-input" />
+                <button class="btn-sm btn-outline" (click)="saveMarks(app)">Save</button>
+              </div>
             </div>
 
             <div class="app-actions">
@@ -118,6 +146,7 @@ const APP_STATUS_COLORS: Record<number, string> = {
               <div class="action-buttons">
                 <button class="btn-sm btn-success" *ngIf="app.status === 1" (click)="updateStatus(app.applicationId, 2)">Shortlist</button>
                 <button class="btn-sm btn-primary-alt" *ngIf="app.status === 2" (click)="openScheduleModal(app)">Schedule Interview</button>
+                <button class="btn-sm btn-success" *ngIf="app.status === 3" (click)="updateStatus(app.applicationId, 4)">Offer Job</button>
                 <button class="btn-sm btn-danger" *ngIf="app.status === 1 || app.status === 2 || app.status === 3" (click)="updateStatus(app.applicationId, 5)">Reject</button>
               </div>
             </div>
@@ -238,6 +267,15 @@ const APP_STATUS_COLORS: Record<number, string> = {
     .btn-primary { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
     .btn-primary:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
     .btn-primary:disabled { opacity: 0.7; cursor: not-allowed; }
+    
+    .btn-ai { background: linear-gradient(135deg, #a855f7, #6366f1); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s; box-shadow: 0 4px 12px rgba(168, 85, 247, 0.3); }
+    .btn-ai:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(168, 85, 247, 0.4); }
+    .btn-ai:disabled { opacity: 0.7; cursor: wait; }
+    .ai-summary { margin-top: 1rem; font-size: 0.9rem; color: #4b5563; background: #f3e8ff; padding: 0.75rem; border-radius: 8px; border-left: 3px solid #a855f7; line-height: 1.5; }
+    .ai-summary strong { color: #7e22ce; display: block; margin-bottom: 0.25rem; }
+    .marks-section { background: #f8fafc; padding: 1rem; border-radius: 8px; margin-bottom: 1.25rem; border-left: 3px solid #10b981; }
+    .marks-input { padding: 0.5rem; border: 1.5px solid #e2e8f0; border-radius: 6px; font-size: 0.9rem; outline: none; width: 100px; }
+    .marks-input:focus { border-color: #10b981; }
 
     /* Modal */
     .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; z-index: 1000; padding: 1rem; }
@@ -264,6 +302,8 @@ export class RecruiterApplicationsComponent implements OnInit {
   selectedJobId = '';
   applications: Application[] = [];
   loading = false;
+  generatingAi = false;
+  sortByMarks = false;
 
   // Interview Schedule State
   showScheduleModal = false;
@@ -315,11 +355,70 @@ export class RecruiterApplicationsComponent implements OnInit {
       next: (res) => {
         this.applications = res.items ?? res ?? [];
         this.loading = false;
-        this.cdr.detectChanges();
+        this.sortApplications();
       },
       error: () => {
         this.loading = false;
         this.cdr.detectChanges();
+      }
+    });
+  }
+
+  generateAiInsights() {
+    if (!this.selectedJobId) return;
+    this.generatingAi = true;
+    this.cdr.detectChanges();
+
+    this.http.get<any[]>(this.apiConfig.getEndpoint(`/ai/jobs/${this.selectedJobId}/ranked-candidates`), { headers: this.getHeaders() }).subscribe({
+      next: (rankedCandidates) => {
+        // Merge AI insights back into applications list
+        rankedCandidates.forEach(rc => {
+          const app = this.applications.find(a => a.applicationId === rc.applicationId);
+          if (app) {
+            app.aiMatchScore = rc.aiMatchScore;
+            app.oneLineSummary = rc.oneLineSummary;
+          }
+        });
+        
+        // Sort applications by aiMatchScore descending
+        this.applications.sort((a, b) => (b.aiMatchScore || 0) - (a.aiMatchScore || 0));
+
+        this.generatingAi = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Failed to generate AI insights', err);
+        alert('Failed to generate AI insights. Check API keys and backend logs.');
+        this.generatingAi = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  toggleSortByMarks() {
+    this.sortByMarks = !this.sortByMarks;
+    this.sortApplications();
+  }
+
+  sortApplications() {
+    if (this.sortByMarks) {
+      this.applications.sort((a, b) => (b.interviewMarks || 0) - (a.interviewMarks || 0));
+    } else {
+      // Sort by AI Match Score by default
+      this.applications.sort((a, b) => (b.aiMatchScore || 0) - (a.aiMatchScore || 0));
+    }
+    this.cdr.detectChanges();
+  }
+
+  saveMarks(app: Application) {
+    if (app.interviewMarks === undefined || app.interviewMarks === null) return;
+    this.http.patch(this.apiConfig.getEndpoint(`/applications/${app.applicationId}/marks`), { marks: app.interviewMarks }, { headers: this.getHeaders() }).subscribe({
+      next: () => {
+        alert('Marks saved successfully!');
+        this.sortApplications();
+      },
+      error: () => {
+        alert('Failed to save marks.');
       }
     });
   }

@@ -24,9 +24,12 @@
 <div class="hc-card mt-4" ng-repeat="application in $ctrl.applications">
     <div class="d-flex justify-content-between">
         <div>
-            <div class="fw-semibold">Candidate {{application.candidateId}}</div>
-            <div class="text-muted">
-                Application {{application.applicationId}}
+            <div class="fw-semibold">{{application.candidateName}}</div>
+            <div class="text-muted" style="font-size: 0.9em;">
+                {{application.candidateEmail}}
+            </div>
+            <div class="text-muted mt-1" style="font-size: 0.8em;">
+                App ID: {{application.applicationId}}
             </div>
         </div>
         <span class="hc-pill">{{$ctrl.statusLabel(application.status)}}</span>

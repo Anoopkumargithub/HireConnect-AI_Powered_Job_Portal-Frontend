@@ -52,6 +52,21 @@
             .then(function (response) {
               var data = response.data || {};
               vm.applications = data.items || data.Items || [];
+              
+              // Fetch candidate details for each application
+              vm.applications.forEach(function (app) {
+                app.candidateName = "Loading...";
+                app.candidateEmail = "";
+                apiService.get("/profiles/candidates/" + app.candidateId)
+                  .then(function(profileRes) {
+                    var profile = profileRes.data || {};
+                    app.candidateName = profile.fullName || (profile.email ? profile.email.split('@')[0] : "Unknown Candidate");
+                    app.candidateEmail = profile.email || "No Email";
+                  })
+                  .catch(function() {
+                    app.candidateName = "Candidate " + app.candidateId.substring(0, 8);
+                  });
+              });
             })
             .catch(function () {
               vm.errorMessage = "Unable to load applications.";

@@ -1,3 +1,4 @@
+import { NotificationBellComponent } from '../../shared/components/notification-bell/notification-bell.component';
 import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
@@ -38,7 +39,7 @@ interface JobMetrics {
 @Component({
   selector: 'app-recruiter-analytics',
   standalone: true,
-  imports: [CommonModule],
+  imports: [NotificationBellComponent, CommonModule],
   template: `
     <div class="dashboard-container">
       <nav class="navbar">
@@ -48,8 +49,12 @@ interface JobMetrics {
           <a class="nav-link" (click)="router.navigate(['/recruiter/applications'])">Applications</a>
           <a class="nav-link active">Analytics</a>
           <a class="nav-link" (click)="router.navigate(['/recruiter/profile'])">Company Profile</a>
+          <a class="nav-link" (click)="router.navigate(['/recruiter/billing'])">Billing</a>
         </div>
-        <button class="logout-btn" (click)="logout()">Logout</button>
+        <div class="nav-actions" style="display: flex; align-items: center; gap: 1.5rem;">
+          <app-notification-bell></app-notification-bell>
+          <button class="logout-btn" (click)="logout()">Logout</button>
+        </div>
       </nav>
 
       <main class="content">
